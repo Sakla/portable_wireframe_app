@@ -1,5 +1,7 @@
 """Gemini image model engine (online). The per-card prompt is sent with the image."""
 import io
+import os
+import urllib.request
 from typing import Callable
 
 import numpy as np
@@ -9,7 +11,34 @@ from ..settings import Settings
 from .base import Engine, EngineError
 
 
+_network_prepared = False
+
+
+def use_system_network_settings() -> None:
+    """Make HTTPS work on corporate networks.
+
+    Trust the Windows certificate store (companies that inspect HTTPS install their
+    own root certificate there) and use the system proxy, which httpx ignores.
+    """
+    global _network_prepared
+    if _network_prepared:
+        return
+    _network_prepared = True
+    try:
+        import truststore
+
+        truststore.inject_into_ssl()
+    except Exception:  # fall back to the bundled certificates
+        pass
+    proxies = urllib.request.getproxies()  # reads the Windows registry settings
+    for scheme in ("https", "http"):
+        key = f"{scheme.upper()}_PROXY"
+        if proxies.get(scheme) and not (os.environ.get(key) or os.environ.get(key.lower())):
+            os.environ[key] = proxies[scheme]
+
+
 def _default_client_factory(api_key: str):
+    use_system_network_settings()
     from google import genai
 
     return genai.Client(api_key=api_key)

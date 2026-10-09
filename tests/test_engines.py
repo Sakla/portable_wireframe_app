@@ -162,3 +162,14 @@ def test_real_lineart_models(engine_id):
     assert out.shape == (300, 400)
     assert out[10, 10] > 200  # white background
     assert out[75:85, 150:250].min() < 128  # dark line along the rectangle's top edge
+
+
+def test_system_proxy_is_exported_for_httpx(monkeypatch):
+    import wireframe_studio.engines.gemini as gemini
+
+    monkeypatch.setattr(gemini, "_network_prepared", False)
+    monkeypatch.delenv("HTTPS_PROXY", raising=False)
+    monkeypatch.delenv("https_proxy", raising=False)
+    monkeypatch.setattr(gemini.urllib.request, "getproxies", lambda: {"https": "http://proxy.corp:8080"})
+    gemini.use_system_network_settings()
+    assert gemini.os.environ["HTTPS_PROXY"] == "http://proxy.corp:8080"

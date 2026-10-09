@@ -5,3 +5,4 @@ numpy==2.5.3
 pillow==12.3.0
 potracer==0.0.4
 google-genai==2.29.0
+truststore==0.10.4
