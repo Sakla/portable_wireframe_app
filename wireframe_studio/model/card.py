@@ -60,8 +60,12 @@ class Card:
 
     def wireframe(self, weight: Optional[int], threshold: int) -> np.ndarray:
         """Selected version with the line weight applied; the original if no version yet."""
-        source = self.current_version.raw if self.versions else to_gray(self.original)
-        return apply_line_weight(to_line_map(source), weight, threshold)
+        if not self.versions:
+            return apply_line_weight(to_line_map(to_gray(self.original)), weight, threshold)
+        return self.wireframe_of(self.selected, weight, threshold)
+
+    def wireframe_of(self, index: int, weight: Optional[int], threshold: int) -> np.ndarray:
+        return apply_line_weight(to_line_map(self.versions[index].raw), weight, threshold)
 
     def save(self, folder: Path, weight: Optional[int], threshold: int) -> list[Path]:
         folder = Path(folder)
