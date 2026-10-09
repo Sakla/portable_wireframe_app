@@ -28,6 +28,9 @@ def main() -> int:
             if log_file:
                 log_file.close()
 
+    from pathlib import Path
+
+    from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
 
     from .engines.registry import build_engines
@@ -38,6 +41,7 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("Wireframe Studio")
     app.setStyle("Fusion")
+    app.setWindowIcon(QIcon(str(Path(__file__).parent / "resources" / "icon.png")))
     settings = Settings.load(settings_path())
     window = MainWindow(settings, settings_path(), build_engines(models_dir(), lambda: settings))
     window.add_files(args.images)

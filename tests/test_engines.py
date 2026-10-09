@@ -149,3 +149,16 @@ def test_gemini_text_only_response():
     resp = types.SimpleNamespace(candidates=[types.SimpleNamespace(content=types.SimpleNamespace(parts=[part]))])
     with pytest.raises(EngineError, match="can't do that"):
         _gemini(_FakeModels(response=resp)).run(_test_image())
+
+
+@pytest.mark.parametrize("engine_id", ["lineart_realistic", "lineart_coarse", "lineart_anime"])
+def test_real_lineart_models(engine_id):
+    engine = build_engines(REPO_MODELS, Settings)[engine_id]
+    if not engine.available():
+        pytest.skip("run tools/fetch_models.py")
+    rgb = np.full((300, 400, 3), 230, np.uint8)
+    rgb[80:220, 100:300] = (30, 80, 160)
+    out = engine.run(rgb)
+    assert out.shape == (300, 400)
+    assert out[10, 10] > 200  # white background
+    assert out[75:85, 150:250].min() < 128  # dark line along the rectangle's top edge
