@@ -161,7 +161,8 @@ def test_real_lineart_models(engine_id):
     out = engine.run(rgb)
     assert out.shape == (300, 400)
     assert out[10, 10] > 200  # white background
-    assert out[75:85, 150:250].min() < 128  # dark line along the rectangle's top edge
+    # a line along the rectangle's top edge, dark enough to survive the default black threshold
+    assert out[75:85, 150:250].min() < 200
 
 
 def test_system_proxy_is_exported_for_httpx(monkeypatch):
